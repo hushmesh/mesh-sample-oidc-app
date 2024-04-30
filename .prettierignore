@@ -1,0 +1,8 @@
+**/dist
+**/build
+**/dist-types
+coverage
+.vscode
+.idea
+.github
+tailwind.config.ts
