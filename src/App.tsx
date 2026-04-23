@@ -10,6 +10,7 @@ function App() {
       <div className="App">
         <Routes>
           <Route path="/" Component={Login} />
+          <Route path="/c/:clientId" Component={Login} />
           <Route path="/info" Component={Info} />
           <Route path="/callback" Component={Callback} />
         </Routes>

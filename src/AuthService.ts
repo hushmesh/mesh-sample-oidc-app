@@ -37,7 +37,7 @@ class AuthService {
   private notifier: AuthorizationNotifier
 
   constructor() {
-    this.clientId = process.env.REACT_APP_CLIENT_ID || ''
+    this.clientId = process.env.REACT_APP_CLIENT_ID || sessionStorage.getItem('clientId') || ''
     this.redirectUri = process.env.REACT_APP_REDIRECT_URI || ''
     this.scope = 'email'
     this.authority = process.env.REACT_APP_AUTHORITY || ''
@@ -73,6 +73,16 @@ class AuthService {
 
   clearTokens() {
     sessionStorage.removeItem('tokens')
+    if (!process.env.REACT_APP_CLIENT_ID) {
+      sessionStorage.removeItem('clientId')
+      this.clientId = ''
+    }
+  }
+
+  setClientId(id: string): void {
+    if (process.env.REACT_APP_CLIENT_ID) return
+    this.clientId = id
+    sessionStorage.setItem('clientId', id)
   }
 
   private async initConfig(): Promise<void> {

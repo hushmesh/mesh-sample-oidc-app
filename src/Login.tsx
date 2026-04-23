@@ -1,10 +1,11 @@
 import authService from './AuthService'
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import MeshButton from './MeshButton'
 
 const Login = () => {
   const navigate = useNavigate()
+  const { clientId } = useParams()
   const [showLogin, setShowLogin] = useState(false)
 
   const handleLogin = () => {
@@ -12,6 +13,9 @@ const Login = () => {
   }
 
   useEffect(() => {
+    if (clientId) {
+      authService.setClientId(clientId)
+    }
     const checkLogin = async () => {
       await authService.loadConfig()
       const tokens = authService.getTokens()
@@ -22,7 +26,7 @@ const Login = () => {
       }
     }
     checkLogin()
-  }, [navigate])
+  }, [clientId, navigate])
 
   return (
     <div>
