@@ -22,6 +22,8 @@ export interface UserProfile {
   client_id: string
 }
 
+export const DEFAULT_SCOPE = 'email'
+
 class AuthService {
   onLoginFailed: (() => void) | null = null
   onLoginSuccess: (() => void) | null = null
@@ -41,7 +43,9 @@ class AuthService {
     // survives the redirect to /callback; REACT_APP_CLIENT_ID is the default when none was set.
     this.clientId = sessionStorage.getItem('clientId') || process.env.REACT_APP_CLIENT_ID || ''
     this.redirectUri = process.env.REACT_APP_REDIRECT_URI || ''
-    this.scope = 'email'
+    // Scopes entered on the login screen are persisted the same way as the client id so the
+    // choice survives the redirect to /callback.
+    this.scope = sessionStorage.getItem('scope') || DEFAULT_SCOPE
     this.authority = process.env.REACT_APP_AUTHORITY || ''
     this.authConfig = null
     this.requestHandler = new RedirectRequestHandler()
@@ -76,12 +80,25 @@ class AuthService {
   clearTokens() {
     sessionStorage.removeItem('tokens')
     sessionStorage.removeItem('clientId')
+    sessionStorage.removeItem('scope')
     this.clientId = process.env.REACT_APP_CLIENT_ID || ''
+    this.scope = DEFAULT_SCOPE
   }
 
   setClientId(id: string): void {
     this.clientId = id
     sessionStorage.setItem('clientId', id)
+  }
+
+  getScope(): string {
+    return this.scope
+  }
+
+  setScope(scope: string): void {
+    // Collapse whitespace so a comma- or newline-separated paste still produces a valid
+    // space-delimited scope parameter.
+    this.scope = scope.split(/[\s,]+/).filter(Boolean).join(' ')
+    sessionStorage.setItem('scope', this.scope)
   }
 
   private async initConfig(): Promise<void> {
