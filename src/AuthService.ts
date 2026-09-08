@@ -29,6 +29,7 @@ class AuthService {
   onLoginSuccess: (() => void) | null = null
 
   private clientId: string
+  private customClientId: string | null
   private redirectUri: string
   private scope: string
   private authority: string
@@ -41,7 +42,8 @@ class AuthService {
   constructor() {
     // A client id chosen via /c/:clientId is persisted to sessionStorage and wins so it
     // survives the redirect to /callback; REACT_APP_CLIENT_ID is the default when none was set.
-    this.clientId = sessionStorage.getItem('clientId') || process.env.REACT_APP_CLIENT_ID || ''
+    this.customClientId = sessionStorage.getItem('clientId')
+    this.clientId = this.customClientId || process.env.REACT_APP_CLIENT_ID || ''
     this.redirectUri = process.env.REACT_APP_REDIRECT_URI || ''
     // Scopes entered on the login screen are persisted the same way as the client id so the
     // choice survives the redirect to /callback.
@@ -81,13 +83,21 @@ class AuthService {
     sessionStorage.removeItem('tokens')
     sessionStorage.removeItem('clientId')
     sessionStorage.removeItem('scope')
+    this.customClientId = null
     this.clientId = process.env.REACT_APP_CLIENT_ID || ''
     this.scope = DEFAULT_SCOPE
   }
 
   setClientId(id: string): void {
     this.clientId = id
+    this.customClientId = id
     sessionStorage.setItem('clientId', id)
+  }
+
+  // The login route this session came in on. Read it before logout() so "mesh out" returns to
+  // /c/:clientId and keeps the custom client id instead of dropping back to the default one at /.
+  getLoginPath(): string {
+    return this.customClientId ? `/c/${encodeURIComponent(this.customClientId)}` : '/'
   }
 
   getScope(): string {

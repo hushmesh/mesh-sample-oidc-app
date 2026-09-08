@@ -9,8 +9,11 @@ const Info = () => {
   const navigate = useNavigate()
 
   const handleLogout = () => {
+    // Capture the /c/:clientId route before logout clears it, so meshing out returns to the same
+    // client id rather than the default one.
+    const loginPath = authService.getLoginPath()
     authService.logout()
-    navigate('/')
+    navigate(loginPath)
   }
 
   useEffect(() => {
@@ -31,8 +34,9 @@ const Info = () => {
         }
       } catch (error) {
         console.log('Failed to fetch info:', error)
+        const loginPath = authService.getLoginPath()
         authService.logout()
-        navigate('/')
+        navigate(loginPath)
       }
     }
 
