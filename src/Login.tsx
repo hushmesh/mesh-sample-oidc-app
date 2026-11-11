@@ -17,6 +17,8 @@ const Login = () => {
   useEffect(() => {
     if (clientId) {
       authService.setClientId(clientId)
+    } else {
+      authService.clearClientId()
     }
     const checkLogin = async () => {
       await authService.loadConfig()

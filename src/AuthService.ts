@@ -40,14 +40,15 @@ class AuthService {
   private notifier: AuthorizationNotifier
 
   constructor() {
-    // A client id chosen via /c/:clientId is persisted to sessionStorage and wins so it
-    // survives the redirect to /callback; REACT_APP_CLIENT_ID is the default when none was set.
-    this.customClientId = sessionStorage.getItem('clientId')
+    // A client id chosen via /c/:clientId is persisted to localStorage, not sessionStorage, so it
+    // survives a /callback that a mobile Mesh app opens in a new tab; REACT_APP_CLIENT_ID is the
+    // default when none was set.
+    this.customClientId = localStorage.getItem('clientId')
     this.clientId = this.customClientId || process.env.REACT_APP_CLIENT_ID || ''
     this.redirectUri = process.env.REACT_APP_REDIRECT_URI || ''
     // Scopes entered on the login screen are persisted the same way as the client id so the
     // choice survives the redirect to /callback.
-    this.scope = sessionStorage.getItem('scope') || DEFAULT_SCOPE
+    this.scope = localStorage.getItem('scope') || DEFAULT_SCOPE
     this.authority = process.env.REACT_APP_AUTHORITY || ''
     this.authConfig = null
     this.requestHandler = new RedirectRequestHandler()
@@ -81,8 +82,8 @@ class AuthService {
 
   clearTokens() {
     sessionStorage.removeItem('tokens')
-    sessionStorage.removeItem('clientId')
-    sessionStorage.removeItem('scope')
+    localStorage.removeItem('clientId')
+    localStorage.removeItem('scope')
     this.customClientId = null
     this.clientId = process.env.REACT_APP_CLIENT_ID || ''
     this.scope = DEFAULT_SCOPE
@@ -91,7 +92,13 @@ class AuthService {
   setClientId(id: string): void {
     this.clientId = id
     this.customClientId = id
-    sessionStorage.setItem('clientId', id)
+    localStorage.setItem('clientId', id)
+  }
+
+  clearClientId(): void {
+    localStorage.removeItem('clientId')
+    this.customClientId = null
+    this.clientId = process.env.REACT_APP_CLIENT_ID || ''
   }
 
   // The login route this session came in on. Read it before logout() so "mesh out" returns to
@@ -108,7 +115,7 @@ class AuthService {
     // Collapse whitespace so a comma- or newline-separated paste still produces a valid
     // space-delimited scope parameter.
     this.scope = scope.split(/[\s,]+/).filter(Boolean).join(' ')
-    sessionStorage.setItem('scope', this.scope)
+    localStorage.setItem('scope', this.scope)
   }
 
   private async initConfig(): Promise<void> {
